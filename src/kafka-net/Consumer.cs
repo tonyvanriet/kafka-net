@@ -19,6 +19,17 @@ namespace KafkaNet
     {
         private readonly ConsumerOptions _options;
         private readonly BlockingCollection<Message> _fetchResponseQueue;
+
+        public BlockingCollection<Message> ResponseQueue
+        {
+            get {
+                _options.Log.DebugFormat("Consumer: Beginning consumption of topic: {0}", _options.Topic);
+                EnsurePartitionPollingThreads(); 
+                return _fetchResponseQueue;
+            }
+            private set { }
+        }
+
         private readonly CancellationTokenSource _disposeToken = new CancellationTokenSource();
         private readonly ConcurrentDictionary<int, Task> _partitionPollingIndex = new ConcurrentDictionary<int, Task>();
         private readonly ConcurrentDictionary<int, long> _partitionOffsetIndex = new ConcurrentDictionary<int, long>();
@@ -33,7 +44,7 @@ namespace KafkaNet
             _options = options;
             _fetchResponseQueue = new BlockingCollection<Message>(_options.ConsumerBufferSize);
             _metadataQueries = new MetadataQueries(_options.Router);
-            
+
             SetOffsetPosition(positions);
         }
 
